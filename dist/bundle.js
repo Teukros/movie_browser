@@ -73,7 +73,7 @@ const movieAPI = __webpack_require__(2);
 const templates = __webpack_require__(1);
 const helpers = __webpack_require__(3);
 
-movieAPI.common.api_key = 'ENTER API KEY HERE';
+movieAPI.common.api_key = '46a9a7237451bee93f64c978baa12ef4';
 
 class movieSearchBox extends HTMLElement {
     constructor() {
@@ -98,8 +98,22 @@ class movieSearchBox extends HTMLElement {
         });
         movieSearchBox.$searchForm.addEventListener('click', function(event) {
             event.preventDefault();
+            let selectedSearchEntity = movieSearchBox.$selectedOptionField.value;
             let searchTerm = movieSearchBox.$searchQueryInput.value;
-            console.log('future request with value: ' + searchTerm)
+            helpers.executeRequest(selectedSearchEntity, searchTerm, function(result){
+                switch (result.type) {
+                    case 'error':
+                        console.log('this error will be displayed to user:');
+                        console.log(result.message);
+                        // movieSearchBox.displayErrors(result.message);
+                        break;
+                    case 'success':
+                        console.log('this result will be displayed to user:');
+                        console.log(result.message);
+                        // movieSearchBox.displaySearchResults(result.message);
+                        break;
+                }
+            });
         })
     }
 }
@@ -1998,6 +2012,7 @@ module.exports = theMovieDb;
 
 const helpers = {};
 const templates = __webpack_require__(1);
+const movieAPI = __webpack_require__(2);
 
 helpers.getForm = (selectedSearchEntity) => {
     switch (selectedSearchEntity) {
@@ -2008,6 +2023,43 @@ helpers.getForm = (selectedSearchEntity) => {
             break;
     }
 };
+
+helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
+    const queryOptions = {};
+    const successCb = (response) => {
+        let searchResult = JSON.parse(response);
+        return cb({
+            type: 'success',
+            message: searchResult
+        })
+    };
+    const errorCb = (response) => {
+        let errorInfo = JSON.parse(response);
+        return cb({
+            type: 'error',
+            message: errorInfo.errors
+        });
+        //
+        // const $list = document.querySelector("[data-ui='movie-list']");
+        // debugger;
+        // errorInfo.errors.forEach((error) => {
+        //     var p = document.createElement("p");
+        //     p.innerText = `${error}`;
+        //     $list.appendChild(p)
+        // })
+    };
+    switch (selectedOptionValue) {
+        case 'movie':
+            queryOptions.query = searchTerm;
+            movieAPI.search.getMovie(queryOptions, successCb, errorCb);
+            break;
+        case 'tvSeries':
+            queryOptions.query = searchTerm;
+            return movieAPI.search.getMovie(queryOptions, successCB, errorCB)
+            break;
+    }
+}
+
 
 module.exports = helpers;
 
