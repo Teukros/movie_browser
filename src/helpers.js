@@ -6,7 +6,7 @@ const movieAPI = require('./movieDBLibrary');
 
 helpers.getForm = (selectedSearchEntity) => {
     switch (selectedSearchEntity) {
-        case 'movie':
+        case 'movies':
             return templates.movieSearchBox;
             break;
         case 'tvSeries':
@@ -29,17 +29,9 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
             type: 'error',
             message: errorInfo.errors
         });
-        //
-        // const $list = document.querySelector("[data-ui='movie-list']");
-        // debugger;
-        // errorInfo.errors.forEach((error) => {
-        //     var p = document.createElement("p");
-        //     p.innerText = `${error}`;
-        //     $list.appendChild(p)
-        // })
     };
     switch (selectedOptionValue) {
-        case 'movie':
+        case 'movies':
             queryOptions.query = searchTerm;
             movieAPI.search.getMovie(queryOptions, successCb, errorCb);
             break;

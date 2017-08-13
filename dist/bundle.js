@@ -72,10 +72,11 @@
 const movieAPI = __webpack_require__(2);
 const templates = __webpack_require__(1);
 const helpers = __webpack_require__(3);
+const moviesDisplayer = __webpack_require__(4);
 
-movieAPI.common.api_key = '46a9a7237451bee93f64c978baa12ef4';
+movieAPI.common.api_key = 'ENTER API KEY HERE';
 
-class movieSearchBox extends HTMLElement {
+class movieDbSearchBox extends HTMLElement {
     constructor() {
         super();
     }
@@ -86,39 +87,60 @@ class movieSearchBox extends HTMLElement {
         this.$searchForm = document.querySelector("[data-ui='search-region']");
         this.$searchForm.innerHTML = helpers.getForm(this.$selectedOptionField.value);
         this.$searchQueryInput = document.querySelector("[data-ui='query'");
+        this.$resultsHeader = document.querySelector("[data-ui='results-header']");
 
         this.attachListener()
     }
 
     attachListener () {
         const movieSearchBox = this;
-        movieSearchBox.$selectedOptionField.addEventListener('change', function(){
+        movieSearchBox.$selectedOptionField.addEventListener('change', () => {
             let selectedSearchEntity = movieSearchBox.$selectedOptionField.value;
             movieSearchBox.$searchForm.innerHTML = helpers.getForm(selectedSearchEntity);
         });
-        movieSearchBox.$searchForm.addEventListener('click', function(event) {
+        movieSearchBox.$searchForm.addEventListener('submit', (event) => {
             event.preventDefault();
             let selectedSearchEntity = movieSearchBox.$selectedOptionField.value;
             let searchTerm = movieSearchBox.$searchQueryInput.value;
-            helpers.executeRequest(selectedSearchEntity, searchTerm, function(result){
+            helpers.executeRequest(selectedSearchEntity, searchTerm, (result) => {
                 switch (result.type) {
                     case 'error':
-                        console.log('this error will be displayed to user:');
-                        console.log(result.message);
-                        // movieSearchBox.displayErrors(result.message);
+                        movieSearchBox.displayErrors(result.message);
                         break;
                     case 'success':
-                        console.log('this result will be displayed to user:');
-                        console.log(result.message);
-                        // movieSearchBox.displaySearchResults(result.message);
+                        let dataToDisplay = {
+                            searchEntity: selectedSearchEntity,
+                            searchResults: result.message
+                        };
+                        movieSearchBox.displaySearchResults(dataToDisplay);
                         break;
                 }
             });
         })
     }
+
+    displaySearchResults(dataToDisplay) {
+        switch(dataToDisplay.searchEntity) {
+            case 'movies':
+                moviesDisplayer.load(dataToDisplay.searchResults)
+                break;
+            case 'tvSeries':
+                //
+                break;
+        }
+    }
+
+    displayErrors(errors) {
+        this.$resultsHeader.innerHTML = ''
+        errors.forEach((error) => {
+            var p = document.createElement("p");
+            p.innerText = `${error}`;
+            this.$resultsHeader.appendChild(p)
+        })
+    }
 }
 
-window.customElements.define('movie-search-box', movieSearchBox);
+window.customElements.define('moviedb-search-box', movieDbSearchBox);
 
 
 /***/ }),
@@ -148,10 +170,13 @@ templates.base = `
 <h1>Welcome!</h1>
 <h2>You can start to search by entering any phrase and pushing 'submit' button. You can also change type of your query with dropdown menu.</h2>
 <select data-ui="selectedOption">
-    <option value="movie">Movies</option>
+    <option value="movies">Movies</option>
     <option value="tvSeries">TV Series</option>
 </select>
-<div style="padding: 10px" data-ui="search-region"></div>`
+<div style="padding: 10px" data-ui="search-region"></div>
+<div style="padding: 10px" data-ui="results-header"></div>
+<div style="padding: 10px" data-ui="search-results"></div>
+`
 
 templates.movieSearchBox = `
 <div>
@@ -163,6 +188,12 @@ templates.movieSearchBox = `
     </form>
     <div data-ui="result"></div>
 </div>`;
+
+templates.movieTemplate = `
+    
+        <h3>A Movie Title</h3>
+        <p>A movie description.</p>
+`
 
 module.exports = templates;
 
@@ -2016,7 +2047,7 @@ const movieAPI = __webpack_require__(2);
 
 helpers.getForm = (selectedSearchEntity) => {
     switch (selectedSearchEntity) {
-        case 'movie':
+        case 'movies':
             return templates.movieSearchBox;
             break;
         case 'tvSeries':
@@ -2039,17 +2070,9 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
             type: 'error',
             message: errorInfo.errors
         });
-        //
-        // const $list = document.querySelector("[data-ui='movie-list']");
-        // debugger;
-        // errorInfo.errors.forEach((error) => {
-        //     var p = document.createElement("p");
-        //     p.innerText = `${error}`;
-        //     $list.appendChild(p)
-        // })
     };
     switch (selectedOptionValue) {
-        case 'movie':
+        case 'movies':
             queryOptions.query = searchTerm;
             movieAPI.search.getMovie(queryOptions, successCb, errorCb);
             break;
@@ -2062,6 +2085,34 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
 
 
 module.exports = helpers;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+const moviesDisplayer = {};
+const templates = __webpack_require__(1);
+
+moviesDisplayer.load = (searchResults) => {
+        const numberOfResults = searchResults.total_results;
+        const movies = searchResults.results;
+        const moviesTemplate = templates.movieTemplate;
+        var $newTemplate = document.createElement('template');
+        $newTemplate.innerHTML = moviesTemplate;
+
+        const $resultsHeader = document.querySelector("[data-ui='results-header']");
+        $resultsHeader.innerHTML = `<div> There are ${numberOfResults} results for given search.</div>`
+        movies.forEach((movie) => {
+            const $clone = document.importNode($newTemplate.content, true);
+            $clone.querySelector("h3").innerText = movie.title;
+            $clone.querySelector("p").innerText = movie.overview;
+            $resultsHeader.appendChild($clone);
+        });
+    };
+
+module.exports = moviesDisplayer;
 
 /***/ })
 /******/ ]);
