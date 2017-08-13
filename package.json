@@ -1,0 +1,14 @@
+{
+  "name": "movie_browser",
+  "version": "1.0.0",
+  "description": "test task",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Adam",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^3.5.4"
+  }
+}
