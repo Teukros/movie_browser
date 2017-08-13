@@ -75,14 +75,17 @@ movieAPI.common.api_key = 'ENTER API KEY HERE';
 
 class movieSearchBox extends HTMLElement {
     constructor() {
-        super()
+        super();
     }
 
     connectedCallback() {
         this.innerHTML = templates.base;
-        const selectedOption = document.querySelector("[data-ui='selectedOption']");
-        const $searchForm = document.querySelector("[data-ui='search-region']");
-        $searchForm.innerHTML = this.getForm(selectedOption.value);
+        this.$selectedOptionField = document.querySelector("[data-ui='selectedOption']");
+        this.$searchForm = document.querySelector("[data-ui='search-region']");
+        this.$searchForm.innerHTML = this.getForm(this.$selectedOptionField.value);
+        this.$searchQueryInput = document.querySelector("[data-ui='query'");
+
+        this.attachListener()
     }
 
     getForm (selectedOptionValue) {
@@ -93,6 +96,19 @@ class movieSearchBox extends HTMLElement {
             case 'tvSeries':
                 break;
         }
+    }
+
+    attachListener () {
+        const movieSearchBox = this;
+        this.$selectedOptionField.addEventListener('change', function(){
+            movieSearchBox.$searchForm.innerHTML = movieSearchBox.getForm(movieSearchBox.$selectedOptionField.value);
+        });
+        movieSearchBox.$searchForm.addEventListener('click', function(event) {
+            event.preventDefault();
+            let searchTerm = movieSearchBox.$searchQueryInput.value;
+            console.log('future request with value: ' + searchTerm)
+
+        })
     }
 }
 
