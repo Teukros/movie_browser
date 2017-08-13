@@ -2118,6 +2118,9 @@ const templates = __webpack_require__(0);
 const movieAPI = __webpack_require__(1);
 
 helpers.getForm = (selectedSearchEntity) => {
+    if (!selectedSearchEntity) {
+        throw new Error('you have to pass string parameter')
+    }
     switch (selectedSearchEntity) {
         case 'movies':
             return templates.movie.searchBox;
@@ -2161,8 +2164,7 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
             movieAPI.search.getPerson(queryOptions, successCb, errorCb);
             break;
     }
-}
-
+};
 
 module.exports = helpers;
 

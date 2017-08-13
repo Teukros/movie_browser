@@ -9,6 +9,7 @@
   "author": "Adam",
   "license": "ISC",
   "devDependencies": {
+    "jasmine": "^2.7.0",
     "webpack": "^3.5.4"
   }
 }
