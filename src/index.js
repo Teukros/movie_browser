@@ -1,8 +1,13 @@
 'use strict';
+const templates = require('./templates');
 
 class movieSearchBox extends HTMLElement {
     constructor() {
         super()
+    }
+
+    connectedCallback() {
+        this.innerHTML = templates.base;
     }
 }
 
