@@ -5,7 +5,7 @@ const templates = require('./templates');
 moviesDisplayer.load = (searchResults) => {
         const numberOfResults = searchResults.total_results;
         const movies = searchResults.results;
-        const moviesTemplate = templates.movieTemplate;
+        const moviesTemplate = templates.movie.resultTemplate;
         var $newTemplate = document.createElement('template');
         $newTemplate.innerHTML = moviesTemplate;
 

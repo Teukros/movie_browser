@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -69,87 +69,11 @@
 
 "use strict";
 
-const movieAPI = __webpack_require__(2);
-const templates = __webpack_require__(1);
-const helpers = __webpack_require__(3);
-const moviesDisplayer = __webpack_require__(4);
-
-movieAPI.common.api_key = 'ENTER API KEY HERE';
-
-class movieDbSearchBox extends HTMLElement {
-    constructor() {
-        super();
-    }
-
-    connectedCallback() {
-        this.innerHTML = templates.base;
-        this.$selectedOptionField = document.querySelector("[data-ui='selectedOption']");
-        this.$searchForm = document.querySelector("[data-ui='search-region']");
-        this.$searchForm.innerHTML = helpers.getForm(this.$selectedOptionField.value);
-        this.$searchQueryInput = document.querySelector("[data-ui='query'");
-        this.$resultsHeader = document.querySelector("[data-ui='results-header']");
-
-        this.attachListener()
-    }
-
-    attachListener () {
-        const movieSearchBox = this;
-        movieSearchBox.$selectedOptionField.addEventListener('change', () => {
-            let selectedSearchEntity = movieSearchBox.$selectedOptionField.value;
-            movieSearchBox.$searchForm.innerHTML = helpers.getForm(selectedSearchEntity);
-        });
-        movieSearchBox.$searchForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            let selectedSearchEntity = movieSearchBox.$selectedOptionField.value;
-            let searchTerm = movieSearchBox.$searchQueryInput.value;
-            helpers.executeRequest(selectedSearchEntity, searchTerm, (result) => {
-                switch (result.type) {
-                    case 'error':
-                        movieSearchBox.displayErrors(result.message);
-                        break;
-                    case 'success':
-                        let dataToDisplay = {
-                            searchEntity: selectedSearchEntity,
-                            searchResults: result.message
-                        };
-                        movieSearchBox.displaySearchResults(dataToDisplay);
-                        break;
-                }
-            });
-        })
-    }
-
-    displaySearchResults(dataToDisplay) {
-        switch(dataToDisplay.searchEntity) {
-            case 'movies':
-                moviesDisplayer.load(dataToDisplay.searchResults)
-                break;
-            case 'tvSeries':
-                //
-                break;
-        }
-    }
-
-    displayErrors(errors) {
-        this.$resultsHeader.innerHTML = ''
-        errors.forEach((error) => {
-            var p = document.createElement("p");
-            p.innerText = `${error}`;
-            this.$resultsHeader.appendChild(p)
-        })
-    }
-}
-
-window.customElements.define('moviedb-search-box', movieDbSearchBox);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-const templates = {};
+const templates = {
+    movie: {},
+    tv: {},
+    persons: {}
+};
 
 templates.base = `
 <style>
@@ -172,15 +96,16 @@ templates.base = `
 <select data-ui="selectedOption">
     <option value="movies">Movies</option>
     <option value="tvSeries">TV Series</option>
+    <option value="persons">People</option>
 </select>
 <div style="padding: 10px" data-ui="search-region"></div>
 <div style="padding: 10px" data-ui="results-header"></div>
 <div style="padding: 10px" data-ui="search-results"></div>
 `
 
-templates.movieSearchBox = `
+templates.movie.searchBox = `
 <div>
-    <form data-ui="search-form">Search for:
+    <form data-ui="search-form">Search for movie:
         <br>
         <input data-ui="query" type="text" name="query">
         <br>
@@ -189,16 +114,49 @@ templates.movieSearchBox = `
     <div data-ui="result"></div>
 </div>`;
 
-templates.movieTemplate = `
+templates.movie.resultTemplate = `
     
         <h3>A Movie Title</h3>
         <p>A movie description.</p>
-`
+`;
+
+templates.tv.searchBox = `
+<div>
+    <form data-ui="search-form">Search for TV series:
+        <br>
+        <input data-ui="query" type="text" name="query">
+        <br>
+        <input style="height:70px;width:100px" type="submit" name="search-btn">
+    </form>
+    <div data-ui="result"></div>
+</div>`;
+
+templates.tv.resultTemplate = `
+    
+        <h3>A TV Title</h3>
+        <p>A tv description.</p>
+`;
+
+
+templates.persons.searchBox = `
+<div>
+    <form data-ui="search-form">Search for People:
+        <br>
+        <input data-ui="query" type="text" name="query">
+        <br>
+        <input style="height:70px;width:100px" type="submit" name="search-btn">
+    </form>
+    <div data-ui="result"></div>
+</div>`;
+
+templates.persons.resultTemplate = `
+        <h3>Name</h3>
+`;
 
 module.exports = templates;
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports) {
 
 /*
@@ -2035,22 +1993,140 @@ theMovieDb.tvEpisodes = {
 module.exports = theMovieDb;
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+const moviesDisplayer = {};
+const templates = __webpack_require__(0);
+
+moviesDisplayer.load = (searchResults) => {
+        const numberOfResults = searchResults.total_results;
+        const movies = searchResults.results;
+        const moviesTemplate = templates.movie.resultTemplate;
+        var $newTemplate = document.createElement('template');
+        $newTemplate.innerHTML = moviesTemplate;
+
+        const $resultsHeader = document.querySelector("[data-ui='results-header']");
+        $resultsHeader.innerHTML = `<div> There are ${numberOfResults} results for given search.</div>`
+        movies.forEach((movie) => {
+            const $clone = document.importNode($newTemplate.content, true);
+            $clone.querySelector("h3").innerText = movie.title;
+            $clone.querySelector("p").innerText = movie.overview;
+            $resultsHeader.appendChild($clone);
+        });
+    };
+
+module.exports = moviesDisplayer;
+
+/***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+const movieAPI = __webpack_require__(1);
+const templates = __webpack_require__(0);
+const helpers = __webpack_require__(4);
+const moviesDisplayer = __webpack_require__(2);
+const tvSeriesDisplayer = __webpack_require__(5);
+const personsDisplayer = __webpack_require__(6);
+
+movieAPI.common.api_key = '46a9a7237451bee93f64c978baa12ef4';
+
+class movieDbSearchBox extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    connectedCallback() {
+        this.innerHTML = templates.base;
+        this.$selectedOptionField = document.querySelector("[data-ui='selectedOption']");
+        this.$searchForm = document.querySelector("[data-ui='search-region']");
+        this.$searchForm.innerHTML = helpers.getForm(this.$selectedOptionField.value);
+        this.$resultsHeader = document.querySelector("[data-ui='results-header']");
+
+        this.attachListener()
+    }
+
+    attachListener () {
+        const movieDbSearchBox = this;
+        movieDbSearchBox.$selectedOptionField.addEventListener('change', () => {
+            let selectedSearchEntity = movieDbSearchBox.$selectedOptionField.value;
+            movieDbSearchBox.$searchForm.innerHTML = helpers.getForm(selectedSearchEntity);
+        });
+        movieDbSearchBox.$searchForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            let selectedSearchEntity = movieDbSearchBox.$selectedOptionField.value;
+            let $searchQueryInput = document.querySelector("[data-ui='query'");
+            let searchTerm = $searchQueryInput.value;
+
+            helpers.executeRequest(selectedSearchEntity, searchTerm, (result) => {
+                switch (result.type) {
+                    case 'error':
+                        movieDbSearchBox.displayErrors(result.message);
+                        break;
+                    case 'success':
+                        let dataToDisplay = {
+                            searchEntity: selectedSearchEntity,
+                            searchResults: result.message
+                        };
+                        movieDbSearchBox.displaySearchResults(dataToDisplay);
+                        break;
+                }
+            });
+        })
+    }
+
+    displaySearchResults(dataToDisplay) {
+        switch(dataToDisplay.searchEntity) {
+            case 'movies':
+                moviesDisplayer.load(dataToDisplay.searchResults);
+                break;
+            case 'tvSeries':
+                tvSeriesDisplayer.load(dataToDisplay.searchResults);
+                break;
+            case 'persons':
+                personsDisplayer.load(dataToDisplay.searchResults);
+                break;
+        }
+    }
+
+    displayErrors(errors) {
+        this.$resultsHeader.innerHTML = '';
+        errors.forEach((error) => {
+            var p = document.createElement("p");
+            p.innerText = `${error}`;
+            this.$resultsHeader.appendChild(p)
+        })
+    }
+}
+
+window.customElements.define('moviedb-search-box', movieDbSearchBox);
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const helpers = {};
-const templates = __webpack_require__(1);
-const movieAPI = __webpack_require__(2);
+const templates = __webpack_require__(0);
+const movieAPI = __webpack_require__(1);
 
 helpers.getForm = (selectedSearchEntity) => {
     switch (selectedSearchEntity) {
         case 'movies':
-            return templates.movieSearchBox;
+            return templates.movie.searchBox;
             break;
         case 'tvSeries':
+            return templates.tv.searchBox;
+            break;
+        case 'persons':
+            return templates.persons.searchBox;
             break;
     }
 };
@@ -2078,7 +2154,11 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
             break;
         case 'tvSeries':
             queryOptions.query = searchTerm;
-            return movieAPI.search.getMovie(queryOptions, successCB, errorCB)
+            movieAPI.search.getTv(queryOptions, successCb, errorCb);
+            break;
+        case 'persons':
+            queryOptions.query = searchTerm;
+            movieAPI.search.getPerson(queryOptions, successCb, errorCb);
             break;
     }
 }
@@ -2087,32 +2167,61 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
 module.exports = helpers;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const moviesDisplayer = {};
-const templates = __webpack_require__(1);
+const tvSeriesDisplayer = {};
+const templates = __webpack_require__(0);
 
-moviesDisplayer.load = (searchResults) => {
+tvSeriesDisplayer.load = (searchResults) => {
         const numberOfResults = searchResults.total_results;
-        const movies = searchResults.results;
-        const moviesTemplate = templates.movieTemplate;
+        const tvs = searchResults.results;
+        const tvsTemplate = templates.tv.resultTemplate;
         var $newTemplate = document.createElement('template');
-        $newTemplate.innerHTML = moviesTemplate;
+        $newTemplate.innerHTML = tvsTemplate;
 
         const $resultsHeader = document.querySelector("[data-ui='results-header']");
-        $resultsHeader.innerHTML = `<div> There are ${numberOfResults} results for given search.</div>`
-        movies.forEach((movie) => {
+        $resultsHeader.innerHTML = `<div> There are ${numberOfResults} results for given search.</div>`;
+
+    tvs.forEach((tv) => {
             const $clone = document.importNode($newTemplate.content, true);
-            $clone.querySelector("h3").innerText = movie.title;
-            $clone.querySelector("p").innerText = movie.overview;
+            $clone.querySelector("h3").innerText = tv.name;
+            $clone.querySelector("p").innerText = tv.overview;
             $resultsHeader.appendChild($clone);
         });
     };
 
-module.exports = moviesDisplayer;
+module.exports = tvSeriesDisplayer;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+const personsDisplayer = {};
+const templates = __webpack_require__(0);
+
+personsDisplayer.load = (searchResults) => {
+    const numberOfResults = searchResults.total_results;
+    const persons = searchResults.results;
+    const personsTemplate = templates.persons.resultTemplate;
+    var $newTemplate = document.createElement('template');
+    $newTemplate.innerHTML = personsTemplate;
+
+    const $resultsHeader = document.querySelector("[data-ui='results-header']");
+    $resultsHeader.innerHTML = `<div> There are ${numberOfResults} results for given search.</div>`;
+
+    persons.forEach((person) => {
+        const $clone = document.importNode($newTemplate.content, true);
+        $clone.querySelector("h3").innerText = person.name;
+        $resultsHeader.appendChild($clone);
+    });
+};
+
+module.exports = personsDisplayer;
 
 /***/ })
 /******/ ]);

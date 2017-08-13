@@ -7,9 +7,13 @@ const movieAPI = require('./movieDBLibrary');
 helpers.getForm = (selectedSearchEntity) => {
     switch (selectedSearchEntity) {
         case 'movies':
-            return templates.movieSearchBox;
+            return templates.movie.searchBox;
             break;
         case 'tvSeries':
+            return templates.tv.searchBox;
+            break;
+        case 'persons':
+            return templates.persons.searchBox;
             break;
     }
 };
@@ -37,7 +41,11 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
             break;
         case 'tvSeries':
             queryOptions.query = searchTerm;
-            return movieAPI.search.getMovie(queryOptions, successCB, errorCB)
+            movieAPI.search.getTv(queryOptions, successCb, errorCb);
+            break;
+        case 'persons':
+            queryOptions.query = searchTerm;
+            movieAPI.search.getPerson(queryOptions, successCb, errorCb);
             break;
     }
 }
