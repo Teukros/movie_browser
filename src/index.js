@@ -6,7 +6,7 @@ const moviesDisplayer = require('./moviesDisplayer');
 const tvSeriesDisplayer = require('./tvSeriesDisplayer');
 const personsDisplayer = require('./personsDisplayer');
 
-movieAPI.common.api_key = '46a9a7237451bee93f64c978baa12ef4';
+movieAPI.common.api_key = 'ENTER API KEY HERE';
 
 class movieDbSearchBox extends HTMLElement {
     constructor() {

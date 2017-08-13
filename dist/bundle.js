@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1998,42 +1998,14 @@ module.exports = theMovieDb;
 
 "use strict";
 
-const moviesDisplayer = {};
-const templates = __webpack_require__(0);
-
-moviesDisplayer.load = (searchResults) => {
-        const numberOfResults = searchResults.total_results;
-        const movies = searchResults.results;
-        const moviesTemplate = templates.movie.resultTemplate;
-        var $newTemplate = document.createElement('template');
-        $newTemplate.innerHTML = moviesTemplate;
-
-        const $resultsHeader = document.querySelector("[data-ui='results-header']");
-        $resultsHeader.innerHTML = `<div> There are ${numberOfResults} results for given search.</div>`
-        movies.forEach((movie) => {
-            const $clone = document.importNode($newTemplate.content, true);
-            $clone.querySelector("h3").innerText = movie.title;
-            $clone.querySelector("p").innerText = movie.overview;
-            $resultsHeader.appendChild($clone);
-        });
-    };
-
-module.exports = moviesDisplayer;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 const movieAPI = __webpack_require__(1);
 const templates = __webpack_require__(0);
-const helpers = __webpack_require__(4);
-const moviesDisplayer = __webpack_require__(2);
+const helpers = __webpack_require__(3);
+const moviesDisplayer = __webpack_require__(4);
 const tvSeriesDisplayer = __webpack_require__(5);
 const personsDisplayer = __webpack_require__(6);
 
-movieAPI.common.api_key = '46a9a7237451bee93f64c978baa12ef4';
+movieAPI.common.api_key = '';
 
 class movieDbSearchBox extends HTMLElement {
     constructor() {
@@ -2095,11 +2067,18 @@ class movieDbSearchBox extends HTMLElement {
 
     displayErrors(errors) {
         this.$resultsHeader.innerHTML = '';
-        errors.forEach((error) => {
-            var p = document.createElement("p");
-            p.innerText = `${error}`;
+        if (!errors.isArray()){
+            const p = document.createElement("p");
+            p.innerText = `${errors}`;
             this.$resultsHeader.appendChild(p)
-        })
+        }
+        if (errors.isArray()){
+            errors.forEach((error) => {
+                const p = document.createElement("p");
+                p.innerText = `${error}`;
+                this.$resultsHeader.appendChild(p)
+            })
+        }
     }
 }
 
@@ -2107,7 +2086,7 @@ window.customElements.define('moviedb-search-box', movieDbSearchBox);
 
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2167,6 +2146,34 @@ helpers.executeRequest = (selectedOptionValue, searchTerm, cb) => {
 };
 
 module.exports = helpers;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+const moviesDisplayer = {};
+const templates = __webpack_require__(0);
+
+moviesDisplayer.load = (searchResults) => {
+        const numberOfResults = searchResults.total_results;
+        const movies = searchResults.results;
+        const moviesTemplate = templates.movie.resultTemplate;
+        var $newTemplate = document.createElement('template');
+        $newTemplate.innerHTML = moviesTemplate;
+
+        const $resultsHeader = document.querySelector("[data-ui='results-header']");
+        $resultsHeader.innerHTML = `<div> There are ${numberOfResults} results for given search.</div>`
+        movies.forEach((movie) => {
+            const $clone = document.importNode($newTemplate.content, true);
+            $clone.querySelector("h3").innerText = movie.title;
+            $clone.querySelector("p").innerText = movie.overview;
+            $resultsHeader.appendChild($clone);
+        });
+    };
+
+module.exports = moviesDisplayer;
 
 /***/ }),
 /* 5 */
