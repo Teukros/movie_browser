@@ -20,11 +20,20 @@ templates.base = `
 <h1>Welcome!</h1>
 <h2>You can start to search by entering any phrase and pushing 'submit' button. You can also change type of your query with dropdown menu.</h2>
 <select data-ui="selectedOption">
-    <option value="Movie">Movies</option>
+    <option value="movie">Movies</option>
     <option value="tvSeries">TV Series</option>
 </select>
-<input style="height:70px;width:100px" type="submit" name="searchBtn">
-
 <div style="padding: 10px" data-ui="search-region"></div>`
+
+templates.movieSearchBox = `
+<div>
+    <form data-ui="search-form">Search for:
+        <br>
+        <input data-ui="query" type="text" name="query">
+        <br>
+        <input style="height:70px;width:100px" type="submit" name="search-btn">
+    </form>
+    <div data-ui="result"></div>
+</div>`;
 
 module.exports = templates;
